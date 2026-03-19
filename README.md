@@ -4,7 +4,7 @@
 
 Welcome to the **Shooter Game** project! This project guides you through building a dynamic shooter game using **Python** and **Pygame**, leveraging **Object-Oriented Programming (OOP)** principles to create a modular and maintainable codebase.
 
-In this game, you'll control a player who can move around the screen, shoot bullets at enemies, collect coins, gain experience points (XP), and level up. As you progress, enemies spawn more frequently, and upon leveling up, you can choose upgrades to enhance your abilities. The game also features a health system, knockback mechanics, a game over screen, and an intuitive upgrade menu.
+In this game, you'll control a player who can move around the screen, shoot fireballs at enemies, collect coins, gain experience points (XP), and level up. As you progress, enemies spawn more frequently, and upon leveling up, you can choose upgrades to enhance your abilities. The game also features a health system, knockback mechanics, a game over screen, and an intuitive upgrade menu.
 
 By following this guide, you'll not only build a functional game but also gain a deep understanding of OOP concepts applied in game development.
 
@@ -31,10 +31,10 @@ By following this guide, you'll not only build a functional game but also gain a
 15. [Adding More Game Mechanics in Game Class](#15-adding-more-game-mechanics-in-game-class)
 16. [Game Over and Restart](#16-game-over-and-restart)
 17. [Draw the Health UI](#17-draw-the-health-ui)
-18. [Update the Player to Handle Bullets](#18-update-the-player-to-handle-bullets)
-19. [The Bullet Class](#19-the-bullet-class)
+18. [Update the Player to Handle Fireballs](#18-update-the-player-to-handle-fireballs)
+19. [The Fireball Class](#19-the-fireball-class)
 20. [Add Shooting Controls in the Game Event Loop](#20-add-shooting-controls-in-the-game-event-loop)
-21. [Bullet-Enemy Collision](#21-bullet-enemy-collision)
+21. [Fireball-Enemy Collision](#21-fireball-enemy-collision)
 22. [Add XP and Leveling to the Player](#22-add-xp-and-leveling-to-the-player)
 23. [Define a Helper Function for XP Requirements](#23-define-a-helper-function-for-xp-requirements)
 24. [Coins Grant XP](#24-coins-grant-xp)
@@ -59,7 +59,7 @@ By following this guide, you'll not only build a functional game but also gain a
 We’re developing a **Shooter Game** using **Python** and **Pygame**. The game includes the following features:
 
 - **Player Movement**: Navigate the player around the screen using keyboard inputs.
-- **Shooting Mechanics**: Fire bullets towards the mouse position or the nearest enemy.
+- **Shooting Mechanics**: Fire fireballs towards the mouse position or the nearest enemy.
 - **Enemies**: Spawn enemies that chase the player. Enemies can be knocked back upon collision.
 - **Coins**: Collect coins dropped by defeated enemies to gain XP.
 - **Experience Points (XP) & Levels**: Gain XP to level up and choose upgrades.
@@ -544,7 +544,7 @@ With these changes, you have effectively transformed the original **scaffold** i
 4. **Encapsulation**: Kept all game-related logic and data within the `Game` class, promoting modularity and maintainability.
 5. **Instantiation**: Created an instance of the `Game` class and ran the game loop.
 
-At this point, you have a functional but minimal game structure. You can see a window, a randomly generated floor background, and a stable loop that exits cleanly when the user closes the window. You now have a strong *foundation* on which to build features like player movement, enemy AI, bullets, coins, etc.
+At this point, you have a functional but minimal game structure. You can see a window, a randomly generated floor background, and a stable loop that exits cleanly when the user closes the window. You now have a strong *foundation* on which to build features like player movement, enemy AI, fireballs, coins, etc.
 
 ---
 
@@ -865,81 +865,81 @@ def draw_ui(self):
 
 ---
 
-## 18. Update the Player to Handle Bullets
+## 18. Update the Player to Handle Fireballs
 
 ### 18.1. New Player Attributes
 
-Inside your `Player.__init__`, add attributes for firing bullets:
+Inside your `Player.__init__`, add attributes for firing fireballs:
 
 ```python
-self.bullet_speed = 10
-self.bullet_size = 10
-self.bullet_count = 1
+self.fireball_speed = 10
+self.fireball_size = 10
+self.fireball_count = 1
 self.shoot_cooldown = 20
 self.shoot_timer = 0
-self.bullets = []
+self.fireballs = []
 ```
 
 **Why these attributes?**
 
-- `bullet_speed`: How fast bullets travel.
-- `bullet_size`: Pixel dimensions of each bullet’s square.
-- `bullet_count`: Number of bullets fired at once and the spread width.
+- `fireball_speed`: How fast fireballs travel.
+- `fireball_size`: Pixel dimensions of each fireball’s square.
+- `fireball_count`: Number of fireballs fired at once and the spread width.
 - `shoot_cooldown`: Frames to wait between shots (20 frames at 60 FPS is ~0.33 seconds).
 - `shoot_timer`: Tracks time since the last shot.
-- `bullets`: A list to store active bullets.
+- `fireballs`: A list to store active fireballs.
 
 ### 18.2. Tracking the Shoot Timer
 
-In `Player.update`, increment the shoot timer each frame and manage bullets:
+In `Player.update`, increment the shoot timer each frame and manage fireballs:
 
 ```python
 def update(self):
     self.shoot_timer += 1
-    self.update_bullets()  # New method to update and remove bullets
+    self.update_fireballs()  # New method to update and remove fireballs
     self.update_animation()
 ```
 
 - `self.shoot_timer += 1`: Ensures shooting only occurs if enough frames have passed.
 
-### 18.3. `update_bullets` Method
+### 18.3. `update_fireballs` Method
 
-Create a method to move bullets and remove them if they go off-screen:
+Create a method to move fireballs and remove them if they go off-screen:
 
 ```python
-def update_bullets(self):
-    for bullet in self.bullets:
-        bullet.update()
+def update_fireballs(self):
+    for fireball in self.fireballs:
+        fireball.update()
 
-    # Keep only bullets still within the game window
-    self.bullets = [
-        b for b in self.bullets 
+    # Keep only fireballs still within the game window
+    self.fireballs = [
+        b for b in self.fireballs 
         if 0 < b.x < WIDTH and 0 < b.y < HEIGHT
     ]
 ```
 
-- Updates each bullet's position.
-- Removes bullets that exit the screen boundaries.
+- Updates each fireball's position.
+- Removes fireballs that exit the screen boundaries.
 
 ### OOP Explanation
 
-- **Encapsulation**: Bullet management is handled within the `Player` class.
-- **Data Integrity**: Ensures bullets are properly tracked and removed when necessary.
+- **Encapsulation**: Fireball management is handled within the `Player` class.
+- **Data Integrity**: Ensures fireballs are properly tracked and removed when necessary.
 
 ---
 
-## 19. The Bullet Class
+## 19. The Fireball Class
 
-Introduce a new `Bullet` class to handle bullet behaviour.
+Introduce a new `Fireball` class to handle fireball behaviour.
 
 ### Implementation
 
-Add the `Bullet` class under the `# --------------------------------------------------------------------------
-#                            BULLET CLASS
+Add the `Fireball` class under the `# --------------------------------------------------------------------------
+#                            FIREBALL CLASS
 # --------------------------------------------------------------------------` section:
 
 ```python
-class Bullet:
+class Fireball:
     def __init__(self, x, y, vx, vy, size):
         self.x = x
         self.y = y
@@ -948,7 +948,7 @@ class Bullet:
         self.size = size
 
         self.image = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
-        self.image.fill((255, 255, 255))  # White bullet
+        self.image.fill((255, 255, 255))  # White fireball
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
     def update(self):
@@ -963,25 +963,25 @@ class Bullet:
 ### Explanation
 
 - **Attributes**:
-  - `(x, y)`: Bullet position.
+  - `(x, y)`: Fireball position.
   - `(vx, vy)`: Velocity in the x/y directions.
-  - `size`: Size of the bullet.
+  - `size`: Size of the fireball.
   - `image` and `rect`: Standard Pygame logic for rendering.
 
 - **Methods**:
-  - `update()`: Moves the bullet by `(vx, vy)`.
-  - `draw(surface)`: Draws bullet on screen.
+  - `update()`: Moves the fireball by `(vx, vy)`.
+  - `draw(surface)`: Draws fireball on screen.
 
 ### OOP Concepts
 
-- **Encapsulation**: All bullet-related data and behaviours are contained within the `Bullet` class.
-- **Modularity**: The bullet's functionality is separate from other game entities, promoting clean code organisation.
+- **Encapsulation**: All fireball-related data and behaviours are contained within the `Fireball` class.
+- **Modularity**: The fireball's functionality is separate from other game entities, promoting clean code organisation.
 
 ---
 
 ## 20. Add Shooting Controls in the Game Event Loop
 
-Enable the player to shoot bullets using keyboard and mouse inputs.
+Enable the player to shoot fireballs using keyboard and mouse inputs.
 
 ### Implementation
 
@@ -1026,33 +1026,33 @@ def handle_events(self):
 
 ---
 
-## 21. Bullet-Enemy Collision
+## 21. Fireball-Enemy Collision
 
-Implement collision detection between bullets and enemies to handle enemy defeat and coin drops.
+Implement collision detection between fireballs and enemies to handle enemy defeat and coin drops.
 
 ### Implementation
 
 Add the following method to the `Game` class:
 
 ```python
-def check_bullet_enemy_collisions(self):
-    bullets_to_remove = []
+def check_fireball_enemy_collisions(self):
+    fireballs_to_remove = []
     enemies_to_remove = []
 
-    for bullet in self.player.bullets:
+    for fireball in self.player.fireballs:
         for enemy in self.enemies:
-            if bullet.rect.colliderect(enemy.rect):
-                bullets_to_remove.append(bullet)
+            if fireball.rect.colliderect(enemy.rect):
+                fireballs_to_remove.append(fireball)
                 enemies_to_remove.append(enemy)
                 # Create a coin at the enemy's position
                 coin = Coin(enemy.x, enemy.y)
                 self.coins.append(coin)
-                break  # Stop checking more enemies for this bullet
+                break  # Stop checking more enemies for this fireball
 
-    # Remove the destroyed bullets and enemies
-    for b in bullets_to_remove:
-        if b in self.player.bullets:
-            self.player.bullets.remove(b)
+    # Remove the destroyed fireballs and enemies
+    for f in fireballs_to_remove:
+        if f in self.player.fireballs:
+            self.player.fireballs.remove(f)
     for e in enemies_to_remove:
         if e in self.enemies:
             self.enemies.remove(e)
@@ -1061,21 +1061,21 @@ def check_bullet_enemy_collisions(self):
 ### Explanation
 
 1. **Collision Detection**:
-    - Iterates through all bullets and enemies.
-    - Checks if any bullet's rectangle collides with an enemy's rectangle.
+    - Iterates through all fireballs and enemies.
+    - Checks if any fireball's rectangle collides with an enemy's rectangle.
 
 2. **Handling Collisions**:
-    - Marks collided bullets and enemies for removal.
+    - Marks collided fireballs and enemies for removal.
     - Spawns a `Coin` at the defeated enemy's position.
 
 3. **Cleanup**:
-    - Removes bullets that have hit enemies.
+    - Removes fireballs that have hit enemies.
     - Removes defeated enemies from the game.
 
 ### OOP Concepts
 
 - **Encapsulation**: Collision logic is contained within its own method.
-- **Data Integrity**: Ensures bullets and enemies are properly managed upon collision.
+- **Data Integrity**: Ensures fireballs and enemies are properly managed upon collision.
 
 ---
 
@@ -1241,9 +1241,9 @@ Create a method to select random upgrades:
 ```python
 def pick_random_upgrades(self, num):
     possible_upgrades = [
-        {"name": "Bigger Bullet",  "desc": "Bullet size +5"},
-        {"name": "Faster Bullet",  "desc": "Bullet speed +2"},
-        {"name": "Extra Bullet",   "desc": "Fire additional bullet"},
+        {"name": "Bigger Fireball",  "desc": "Fireball size +5"},
+        {"name": "Faster Fireball",  "desc": "Fireball speed +2"},
+        {"name": "Extra Fireball",   "desc": "Fire additional fireball"},
         {"name": "Shorter Cooldown", "desc": "Shoot more frequently"},
     ]
     return random.sample(possible_upgrades, k=num)
@@ -1261,12 +1261,12 @@ Define `apply_upgrade` method:
 ```python
 def apply_upgrade(self, player, upgrade):
     name = upgrade["name"]
-    if name == "Bigger Bullet":
-        player.bullet_size += 5
-    elif name == "Faster Bullet":
-        player.bullet_speed += 2
-    elif name == "Extra Bullet":
-        player.bullet_count += 1
+    if name == "Bigger Fireball":
+        player.fireball_size += 5
+    elif name == "Faster Fireball":
+        player.fireball_speed += 2
+    elif name == "Extra Fireball":
+        player.fireball_count += 1
     elif name == "Shorter Cooldown":
         player.shoot_cooldown = max(1, int(player.shoot_cooldown * 0.8))
 ```
@@ -1459,7 +1459,7 @@ Ensure all implemented features work as intended.
 ### Checklist
 
 1. **Coins**:
-    - Spawn when enemies are hit by bullets.
+    - Spawn when enemies are hit by fireballs.
     - Collecting coins increases player XP.
 
 2. **Level Up**:
@@ -1492,7 +1492,7 @@ Ensure all implemented features work as intended.
 Throughout this project, we've applied several core OOP concepts:
 
 1. **Encapsulation**: 
-    - Managed game state and logic within dedicated classes (`Player`, `Enemy`, `Bullet`, `Coin`, `Game`).
+    - Managed game state and logic within dedicated classes (`Player`, `Enemy`, `Fireball`, `Coin`, `Game`).
     - Each class handles its own data and behaviours, promoting clean code organisation.
 
 2. **Abstraction**:
@@ -1524,9 +1524,9 @@ Congratulations on reaching the final expected code! Your game now includes comp
     - Introduce enemies with unique behaviours or abilities.
     - Implement boss enemies with higher health and more complex attack patterns.
 
-2. **Bullet Patterns**:
-    - Create varied bullet types (e.g., homing bullets, spread shots).
-    - Implement power-ups that modify bullet behaviour temporarily.
+2. **Fireball Patterns**:
+    - Create varied fireball types (e.g., homing fireballs, spread shots).
+    - Implement power-ups that modify fireball behaviour temporarily.
 
 3. **Persistent Scoring System**:
     - Track and display the player's score based on enemies defeated and coins collected.
@@ -1546,14 +1546,14 @@ Congratulations on reaching the final expected code! Your game now includes comp
 
 7. **User Interface Enhancements**:
     - Add menus, settings, and pause functionality.
-    - Implement visual effects like particle systems for explosions or bullet trails.
+    - Implement visual effects like particle systems for explosions or fireball trails.
 
 8. **Mobile Compatibility**:
     - Optimise controls for touch interfaces if targeting mobile platforms.
 
 ### OOP Concepts for Future Features
 
-- **Inheritance**: Create base classes for enemies or bullets to facilitate polymorphism.
+- **Inheritance**: Create base classes for enemies or fireballs to facilitate polymorphism.
 - **Composition**: Combine multiple objects to build more complex behaviours or features.
 - **Design Patterns**: Utilise patterns like Factory for enemy creation or Observer for event handling to further enhance code quality.
 
