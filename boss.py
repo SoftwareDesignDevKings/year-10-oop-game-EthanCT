@@ -23,8 +23,8 @@ class Boss:
         self.speed      = BOSS_BASE_SPEED
 
         # sprite loaded from final_boss.png via asset_loading
-        self.image      = image
-        self.rect       = self.image.get_rect(center=(self.x, self.y))
+        self.image = image
+        self.rect  = self.image.get_rect(center=(self.x, self.y))
 
         # keep references needed for spawning projectiles and minions
         self.enemy_assets   = enemy_assets
@@ -39,64 +39,64 @@ class Boss:
         self.minion_timer = 0
 
         # charge state - direction is locked in when the charge starts
-        self.is_charging    = False
-        self.charge_dx      = 0
-        self.charge_dy      = 0
-        self.charge_frames  = 0
+        self.is_charging         = False
+        self.charge_direction_x  = 0
+        self.charge_direction_y  = 0
+        self.charge_frames_left  = 0
 
     def take_damage(self, amount):
         self.health = max(0, self.health - amount)
 
     def _do_radial_burst(self):
         # spread BOSS_BURST_COUNT projectiles evenly around 360 degrees
-        for i in range(BOSS_BURST_COUNT):
-            angle = math.radians((360 / BOSS_BURST_COUNT) * i)
-            vx    = math.cos(angle) * BOSS_PROJECTILE_SPEED
-            vy    = math.sin(angle) * BOSS_PROJECTILE_SPEED
-            proj  = Fireball(self.x, self.y, vx, vy,
-                             BOSS_PROJECTILE_SIZE, self.fireball_image,
-                             damage=BOSS_PROJECTILE_DAMAGE)
-            self.projectiles.append(proj)
+        for projectile_index in range(BOSS_BURST_COUNT):
+            angle      = math.radians((360 / BOSS_BURST_COUNT) * projectile_index)
+            velocity_x = math.cos(angle) * BOSS_PROJECTILE_SPEED
+            velocity_y = math.sin(angle) * BOSS_PROJECTILE_SPEED
+            projectile = Fireball(self.x, self.y, velocity_x, velocity_y,
+                                  BOSS_PROJECTILE_SIZE, self.fireball_image,
+                                  damage=BOSS_PROJECTILE_DAMAGE)
+            self.projectiles.append(projectile)
 
     def _start_charge(self, player):
         # lock direction toward the player then let update() carry it forward
-        dx = player.x - self.x
-        dy = player.y - self.y
-        dist = math.sqrt(dx * dx + dy * dy)
-        if dist != 0:
-            self.charge_dx   = dx / dist
-            self.charge_dy   = dy / dist
-        self.is_charging  = True
-        self.charge_frames = BOSS_CHARGE_DURATION
+        delta_x       = player.x - self.x
+        delta_y       = player.y - self.y
+        distance      = math.sqrt(delta_x * delta_x + delta_y * delta_y)
+        if distance != 0:
+            self.charge_direction_x = delta_x / distance
+            self.charge_direction_y = delta_y / distance
+        self.is_charging        = True
+        self.charge_frames_left = BOSS_CHARGE_DURATION
 
     def _spawn_minions(self, enemy_list, world_index):
         # pick random enemy types from the current world's pool and drop them nearby
-        pool = WORLD_ENEMY_POOLS[world_index]
+        enemy_pool = WORLD_ENEMY_POOLS[world_index]
         for _ in range(BOSS_MINION_COUNT):
-            angle  = random.uniform(0, math.pi * 2)
-            dist   = random.randint(60, 120)
-            mx     = self.x + math.cos(angle) * dist
-            my     = self.y + math.sin(angle) * dist
-            etype  = random.choice(pool)
-            minion = Enemy(mx, my, etype, self.enemy_assets)
+            spawn_angle    = random.uniform(0, math.pi * 2)
+            spawn_distance = random.randint(60, 120)
+            spawn_x        = self.x + math.cos(spawn_angle) * spawn_distance
+            spawn_y        = self.y + math.sin(spawn_angle) * spawn_distance
+            enemy_type     = random.choice(enemy_pool)
+            minion         = Enemy(spawn_x, spawn_y, enemy_type, self.enemy_assets)
             enemy_list.append(minion)
 
     def update(self, player, enemy_list, world_index):
 
         # movement - either charging at full speed or walking slowly toward the player
         if self.is_charging:
-            self.x += self.charge_dx * BOSS_CHARGE_SPEED
-            self.y += self.charge_dy * BOSS_CHARGE_SPEED
-            self.charge_frames -= 1
-            if self.charge_frames <= 0:
+            self.x += self.charge_direction_x * BOSS_CHARGE_SPEED
+            self.y += self.charge_direction_y * BOSS_CHARGE_SPEED
+            self.charge_frames_left -= 1
+            if self.charge_frames_left <= 0:
                 self.is_charging = False
         else:
-            dx = player.x - self.x
-            dy = player.y - self.y
-            dist = math.sqrt(dx * dx + dy * dy)
-            if dist != 0:
-                self.x += (dx / dist) * self.speed
-                self.y += (dy / dist) * self.speed
+            delta_x  = player.x - self.x
+            delta_y  = player.y - self.y
+            distance = math.sqrt(delta_x * delta_x + delta_y * delta_y)
+            if distance != 0:
+                self.x += (delta_x / distance) * self.speed
+                self.y += (delta_y / distance) * self.speed
 
         self.rect.center = (int(self.x), int(self.y))
 
@@ -118,8 +118,8 @@ class Boss:
             self._spawn_minions(enemy_list, world_index)
 
         # update projectiles and cull anything that's left the screen
-        for proj in self.projectiles:
-            proj.update()
+        for projectile in self.projectiles:
+            projectile.update()
         self.projectiles = [
             p for p in self.projectiles
             if 0 <= p.x <= WIDTH and 0 <= p.y <= HEIGHT
@@ -130,23 +130,17 @@ class Boss:
         surface.blit(self.image, self.rect)
 
         # health bar sits above the sprite, wider than regular enemy bars
-        bar_x  = self.rect.centerx - BOSS_BAR_WIDTH // 2
-        bar_y  = self.rect.top - BOSS_BAR_OFFSET
+        bar_left = self.rect.centerx - BOSS_BAR_WIDTH // 2
+        bar_top  = self.rect.top - BOSS_BAR_OFFSET
 
         # dark red background
-        pygame.draw.rect(surface, (80, 0, 0),
-                         (bar_x, bar_y, BOSS_BAR_WIDTH, BOSS_BAR_HEIGHT))
+        pygame.draw.rect(surface, (80, 0, 0), (bar_left, bar_top, BOSS_BAR_WIDTH, BOSS_BAR_HEIGHT))
 
         # fill colour shifts from yellow (full health) toward red (low health)
-        ratio    = self.health / self.max_health
-        bar_col  = (
-            int(255 * (1 - ratio)),
-            int(200 * ratio),
-            0
-        )
-        fill_w   = int(BOSS_BAR_WIDTH * ratio)
-        pygame.draw.rect(surface, bar_col,
-                         (bar_x, bar_y, fill_w, BOSS_BAR_HEIGHT))
+        health_ratio = self.health / self.max_health
+        bar_colour   = (int(255 * (1 - health_ratio)), int(200 * health_ratio), 0)
+        fill_width   = int(BOSS_BAR_WIDTH * health_ratio)
+        pygame.draw.rect(surface, bar_colour, (bar_left, bar_top, fill_width, BOSS_BAR_HEIGHT))
 
-        for proj in self.projectiles:
-            proj.draw(surface)
+        for projectile in self.projectiles:
+            projectile.draw(surface)

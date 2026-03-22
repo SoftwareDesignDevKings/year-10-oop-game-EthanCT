@@ -27,12 +27,10 @@ class Button:
         return False
 
     def draw(self, surface):
-        fill = self.hover_color if self.is_hovered() else self.color
+        fill_colour = self.hover_color if self.is_hovered() else self.color
 
-        pygame.draw.rect(surface, fill, self.rect, border_radius=6)
-        pygame.draw.rect(surface, self.border_color, self.rect,
-                         self.border_width, border_radius=6)
+        pygame.draw.rect(surface, fill_colour, self.rect, border_radius=6)
+        pygame.draw.rect(surface, self.border_color, self.rect, self.border_width, border_radius=6)
 
-        text_surf = self.font.render(self.text, True, self.text_color)
-        text_rect = text_surf.get_rect(center=self.rect.center)
-        surface.blit(text_surf, text_rect)
+        text_surface = self.font.render(self.text, True, self.text_color)
+        surface.blit(text_surface, text_surface.get_rect(center=self.rect.center))

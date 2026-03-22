@@ -1,7 +1,17 @@
+import os
+import sys
+
+# suppress libpng iCCP warnings before pygame loads anything
+# these come from the PNG assets having a slightly malformed colour profile
+# and are completely harmless - redirecting the file descriptor at the OS level
+# catches warnings that originate inside C libraries, which Python's sys.stderr swap misses
+devnull_fd   = os.open(os.devnull, os.O_WRONLY)
+old_stderr   = os.dup(2)
+os.dup2(devnull_fd, 2)
+
 import pygame
 import random
 import math
-import os
 from game import Game
 from constants import *
 
@@ -27,6 +37,11 @@ from constants import *
 def main():
     game = Game()
     game.run()
+
+    # restore stderr so any real errors after the game closes are still visible
+    os.dup2(old_stderr, 2)
+    os.close(old_stderr)
+    os.close(devnull_fd)
 
 if __name__ == "__main__":
     main()

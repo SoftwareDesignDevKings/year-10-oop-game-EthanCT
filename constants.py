@@ -1,5 +1,5 @@
-WIDTH = 800
-HEIGHT = 600
+WIDTH = 1280
+HEIGHT = 720
 FPS = 60
 
 # movement speeds
@@ -21,7 +21,7 @@ FIREBALL_SCALE_FACTOR = 1.5
 
 # fireball base damage and starting cooldown in frames
 FIREBALL_BASE_DAMAGE    = 1
-FIREBALL_SHOOT_COOLDOWN = 40
+FIREBALL_SHOOT_COOLDOWN = 80
 
 # health values per enemy type
 ENEMY_HEALTH = {
@@ -66,12 +66,26 @@ DAMAGE_TEXT_RISE     = 1
 # how many positions to keep for the fireball trail
 FIREBALL_TRAIL_LENGTH = 8
 
+# coin magnet - invisible radius around the player that pulls coins in
+COIN_MAGNET_RADIUS = 120   # pixels - coins inside this start sliding toward the player
+COIN_MAGNET_SPEED  = 4     # pixels per frame the coin moves toward the player
+
+# flame particles burst on fireball hit
+FLAME_PARTICLE_COUNT    = 8    # particles per hit
+FLAME_PARTICLE_LIFETIME = 18   # frames before a particle disappears
+FLAME_PARTICLE_SPEED    = 2.5  # max drift speed in any direction
+FLAME_PARTICLE_SIZE     = 5    # square side length in pixels
+
+# unyielding determination - pierce homing behaviour
+PIERCE_MIN_DISTANCE = 150   # fireball won't home toward an enemy closer than this
+PIERCE_TURN_RATE    = 4     # max degrees the fireball can turn per frame when homing
+
 # how many normal waves between boss waves
-BOSS_WAVE_INTERVAL     = 5
+BOSS_WAVE_INTERVAL     = 10
 
 # enemy stat scaling applied each wave on top of base values
 WAVE_HEALTH_SCALE      = 1     # extra max health per wave
-WAVE_SPEED_SCALE       = 0.1   # extra speed per wave
+WAVE_SPEED_SCALE       = 0.01   # extra speed per wave
 
 # how long the wave announcement stays on screen in frames
 WAVE_ANNOUNCE_DURATION = 180
