@@ -21,7 +21,7 @@ FIREBALL_SCALE_FACTOR = 1.5
 
 # fireball base damage and starting cooldown in frames
 FIREBALL_BASE_DAMAGE    = 1
-FIREBALL_SHOOT_COOLDOWN = 80
+FIREBALL_SHOOT_COOLDOWN = 100
 
 # health values per enemy type
 ENEMY_HEALTH = {
@@ -77,8 +77,8 @@ FLAME_PARTICLE_SPEED    = 2.5  # max drift speed in any direction
 FLAME_PARTICLE_SIZE     = 5    # square side length in pixels
 
 # unyielding determination - pierce homing behaviour
-PIERCE_MIN_DISTANCE = 150   # fireball won't home toward an enemy closer than this
-PIERCE_TURN_RATE    = 4     # max degrees the fireball can turn per frame when homing
+PIERCE_TURN_RATE     = 0.8   # base turn rate - multiplied by current speed each frame
+PIERCE_BORDER_MARGIN = 80    # pixels from screen edge where the fireball starts curving back in
 
 # how many normal waves between boss waves
 BOSS_WAVE_INTERVAL     = 10

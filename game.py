@@ -16,6 +16,7 @@ from boss import Boss
 from fireball import FlameParticle
 
 
+
 class Game:
     def __init__(self):
 
@@ -253,7 +254,6 @@ class Game:
 
     def find_nearest_unhit_enemy(self, fireball):
         # finds the closest enemy the fireball hasn't already hit, measured from the fireball's position
-        # enemies closer than PIERCE_MIN_DISTANCE are ignored - no point in a tiny hop
         nearest_enemy    = None
         nearest_distance = float('inf')
 
@@ -261,8 +261,6 @@ class Game:
             if id(enemy) in fireball.hit_enemies:
                 continue
             distance = math.sqrt((enemy.x - fireball.x) ** 2 + (enemy.y - fireball.y) ** 2)
-            if distance < PIERCE_MIN_DISTANCE:
-                continue
             if distance < nearest_distance:
                 nearest_distance = distance
                 nearest_enemy    = enemy
@@ -858,8 +856,8 @@ class Game:
         pygame.mixer.music.play(-1)   # -1 means loop forever
 
     def play_random_gameplay_track(self):
-        # gamebg3 loops until wave 6, after that gamebg1 and gamebg2 alternate
-        if self.wave_number < 6:
+        # gamebg3 loops until wave 60, after that gamebg1 and gamebg2 alternate
+        if self.wave_number < 60:
             track = os.path.join("assets", "gamebg3.mp3")
         else:
             tracks    = [os.path.join("assets", "gamebg1.mp3"), os.path.join("assets", "gamebg2.mp3")]
@@ -894,8 +892,8 @@ class Game:
             if self.current_music == title_track:
                 self.current_music = None
                 self.play_random_gameplay_track()
-            # cut over from gamebg3 to the main rotation once wave 6 is reached
-            elif self.current_music == intro_track and self.wave_number >= 6:
+            # cut over from gamebg3 to the main rotation once wave 60 is reached
+            elif self.current_music == intro_track and self.wave_number >= 60:
                 self.current_music = None
                 self.play_random_gameplay_track()
             # if a gameplay track just finished, pick the next one

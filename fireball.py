@@ -30,7 +30,6 @@ class Fireball:
 
         # live reference to the enemy we're currently homing toward
         # keeping the object itself (not just coords) means we follow it as it moves
-        # set back to None once we're lined up or the enemy dies
         self.homing_target = None
 
     def redirect_toward(self, enemy):
@@ -39,32 +38,50 @@ class Fireball:
 
     def update(self):
 
-        # if we have a homing target, nudge our velocity a few degrees toward it each frame
-        if self.homing_target is not None:
-            target_x = self.homing_target.x
-            target_y = self.homing_target.y
+        speed = math.sqrt(self.velocity_x ** 2 + self.velocity_y ** 2)
 
-            desired_angle = math.atan2(target_y - self.y, target_x - self.x)
-            current_angle = math.atan2(self.velocity_y, self.velocity_x)
+        # border avoidance and homing only apply to pierce fireballs (player ability)
+        # boss projectiles just fly straight and get culled when they leave the screen
+        if self.pierce_count > 0 or self.homing_target is not None:
 
-            # find the shortest angular gap between where we are and where we want to be
-            # wrapping through -pi/+pi so we always turn the short way around
-            angle_diff = desired_angle - current_angle
-            while angle_diff >  math.pi: angle_diff -= 2 * math.pi
-            while angle_diff < -math.pi: angle_diff += 2 * math.pi
+            # turn rate scales with speed - faster fireball can bend more each frame
+            max_turn = math.radians(PIERCE_TURN_RATE * speed)
 
-            # clamp the step to PIERCE_TURN_RATE degrees so the curve looks smooth
-            max_turn    = math.radians(PIERCE_TURN_RATE)
-            turn_amount = max(-max_turn, min(max_turn, angle_diff))
-            new_angle   = current_angle + turn_amount
+            # figure out what to steer toward - border avoidance beats enemy homing
+            near_edge = (
+                self.x <= PIERCE_BORDER_MARGIN or
+                self.x >= WIDTH  - PIERCE_BORDER_MARGIN or
+                self.y <= PIERCE_BORDER_MARGIN or
+                self.y >= HEIGHT - PIERCE_BORDER_MARGIN
+            )
 
-            speed           = math.sqrt(self.velocity_x ** 2 + self.velocity_y ** 2)
-            self.velocity_x = math.cos(new_angle) * speed
-            self.velocity_y = math.sin(new_angle) * speed
+            if near_edge:
+                steer_x = WIDTH  // 2
+                steer_y = HEIGHT // 2
+            elif self.homing_target is not None:
+                steer_x = self.homing_target.x
+                steer_y = self.homing_target.y
+            else:
+                steer_x = None
+                steer_y = None
 
-            # clear the target once we're basically pointing at it - fly straight from here
-            if abs(angle_diff) < math.radians(PIERCE_TURN_RATE):
-                self.homing_target = None
+            if steer_x is not None:
+                desired_angle = math.atan2(steer_y - self.y, steer_x - self.x)
+                current_angle = math.atan2(self.velocity_y, self.velocity_x)
+
+                # find the shortest angular gap, wrapping through -pi/+pi
+                angle_diff = desired_angle - current_angle
+                while angle_diff >  math.pi: angle_diff -= 2 * math.pi
+                while angle_diff < -math.pi: angle_diff += 2 * math.pi
+
+                turn_amount     = max(-max_turn, min(max_turn, angle_diff))
+                new_angle       = current_angle + turn_amount
+                self.velocity_x = math.cos(new_angle) * speed
+                self.velocity_y = math.sin(new_angle) * speed
+
+                # once we're pointing close enough at the enemy, stop steering
+                if not near_edge and abs(angle_diff) < max_turn:
+                    self.homing_target = None
 
         # save position before moving so the trail lags behind correctly
         self.trail_positions.append((self.x, self.y))
@@ -97,7 +114,6 @@ class Fireball:
             surface.blit(trail_surface, (int(trail_x) - radius, int(trail_y) - radius))
 
         surface.blit(self.rotated_image, self.rect)
-
 
 class FlameParticle:
     def __init__(self, x, y):
