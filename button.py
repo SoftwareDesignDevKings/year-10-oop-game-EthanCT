@@ -3,10 +3,7 @@ from constants import *
 
 
 class Button:
-    def __init__(self, x, y, width, height, text, font,
-                 color=(80, 80, 80), hover_color=(120, 120, 120),
-                 text_color=(255, 255, 255), border_color=(200, 200, 200),
-                 border_width=2):
+    def __init__(self, x, y, width, height, text, font, color=(80, 80, 80), hover_color=(120, 120, 120), text_color=(255, 255, 255), border_color=(200, 200, 200), border_width=2):
 
         self.rect         = pygame.Rect(x, y, width, height)
         self.text         = text
